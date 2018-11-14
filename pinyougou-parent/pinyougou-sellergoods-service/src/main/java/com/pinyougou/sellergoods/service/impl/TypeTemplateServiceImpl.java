@@ -120,8 +120,8 @@ public class TypeTemplateServiceImpl implements TypeTemplateService {
 		}
 		
 		Page<TbTypeTemplate> page= (Page<TbTypeTemplate>)typeTemplateMapper.selectByExample(example);
-            saveToRedis();//存入数据到缓存
-		return new PageResult(page.getTotal(), page.getResult());
+			saveToRedis();//存入数据到缓存
+			return new PageResult(page.getTotal(), page.getResult());
 	}
 
 	@Override
@@ -147,9 +147,9 @@ public class TypeTemplateServiceImpl implements TypeTemplateService {
 	 */
 	private void saveToRedis() {
 		//获取模板数据
-		List<TbTypeTemplate> typeTemplateList = findAll();
+		List<TbTypeTemplate> templateList = findAll();
 		//循环模板
-		for(TbTypeTemplate typeTemplate : typeTemplateList){
+		for(TbTypeTemplate typeTemplate : templateList){
 			//存储品牌列表
 			List<Map> brandList = JSON.parseArray(typeTemplate.getBrandIds(),Map.class);
 			redisTemplate.boundHashOps("brandList").put(typeTemplate.getId(),brandList);
@@ -158,6 +158,7 @@ public class TypeTemplateServiceImpl implements TypeTemplateService {
             redisTemplate.boundHashOps("specList").put(typeTemplate.getId(),specList);
 
 		}
+		System.out.println("缓存品牌列表");
 	}
 
 }

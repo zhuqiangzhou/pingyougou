@@ -1,15 +1,14 @@
 package com.pinyougou.manager.controller;
-import java.util.List;
-
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
 import com.alibaba.dubbo.config.annotation.Reference;
 import com.pinyougou.pojo.TbTypeTemplate;
 import com.pinyougou.sellergoods.service.TypeTemplateService;
-
 import entity.PageResult;
 import entity.Result;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RestController;
+
+import java.util.List;
 /**
  * controller
  * @author Administrator
@@ -101,13 +100,14 @@ public class TypeTemplateController {
 	
 		/**
 	 * 查询+分页
-	 * @param brand
+	 * @param typeTemplate
 	 * @param page
 	 * @param rows
 	 * @return
 	 */
 	@RequestMapping("/search")
-	public PageResult search(@RequestBody TbTypeTemplate typeTemplate, int page, int rows  ){
+	public PageResult search(@RequestBody TbTypeTemplate typeTemplate, int page, int rows){
+		System.out.println("11111111");
 		return typeTemplateService.findPage(typeTemplate, page, rows);		
 	}
 	

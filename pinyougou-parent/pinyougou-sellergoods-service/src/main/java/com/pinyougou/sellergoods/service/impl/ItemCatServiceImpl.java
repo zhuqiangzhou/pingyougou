@@ -110,16 +110,18 @@ public class ItemCatServiceImpl implements ItemCatService {
 	 */
 	@Override
 	public List<TbItemCat> findByParentId(Long parentId) {
+		System.out.println("11111111111111111111");
 		TbItemCatExample example = new TbItemCatExample();
 		Criteria criteria = example.createCriteria();
+		// 设置条件:
 		criteria.andParentIdEqualTo(parentId);
 
 		//每次执行查询的时候，一次性读取缓存进行存储 (因为每次增删改都要执行此方法)
-		List<TbItemCat> list = findAll();
-		for (TbItemCat itemCat : list ) {
+		List<TbItemCat> itemCatList = findAll();
+		for (TbItemCat itemCat : itemCatList ) {
 			redisTemplate.boundHashOps("itemCat").put(itemCat.getName(), itemCat.getTypeId());
 		}
-		System.out.println("更新缓存:商品分类表");
+		System.out.println("将模板ID放入缓存");
 		return itemCatMapper.selectByExample(example);
 	}
 

@@ -5,6 +5,7 @@ import com.pinyougou.pojo.TbItem;
 import com.pinyougou.search.service.ItemSearchService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
+import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.data.solr.core.SolrTemplate;
 import org.springframework.data.solr.core.query.*;
 import org.springframework.data.solr.core.query.result.*;
@@ -22,6 +23,9 @@ public class ItemSearchServiceImpl implements ItemSearchService {
 
     @Autowired
     private SolrTemplate solrTemplate;
+
+    @Autowired
+    private RedisTemplate redisTemplate;
 
 
     @Override
@@ -42,9 +46,13 @@ public class ItemSearchServiceImpl implements ItemSearchService {
 
 
         //2.分组查询商品分类列表
-        List categoryList = searchCategoryList(searchMap);
+        List<String> categoryList = searchCategoryList(searchMap);
         map.put("categoryList",categoryList);
 
+        //3.查询品牌和规格列表
+        if (categoryList.size()>0) {
+            map.putAll(searchBrandAndSpecList(categoryList.get(0)));
+        }
         return map;
     }
 
@@ -91,6 +99,7 @@ public class ItemSearchServiceImpl implements ItemSearchService {
         Query query = new SimpleQuery("*:*");
         //根据关键字查询
         Criteria criteria = new Criteria("item_keywords").is(searchMap.get("keywords"));//where....
+        query.addCriteria(criteria);
         //设置分组选项
         GroupOptions groupOptions = new GroupOptions().addGroupByField("item_category"); //group by
         query.setGroupOptions(groupOptions);
@@ -107,6 +116,30 @@ public class ItemSearchServiceImpl implements ItemSearchService {
             list.add(entry.getGroupValue()); //将分组的结果添加到返回值中
         }
         return list;
+
+    }
+
+    /**
+     * 根据商品分类名称查询品牌和规格列表
+     * @param category
+     * @return
+     */
+    private Map searchBrandAndSpecList(String category) {
+        Map map = new HashMap();
+        //1.根据商品分类名称得到模版ID
+        Long templateId = (Long) redisTemplate.boundHashOps("itemCat").get(category);
+
+            if (templateId!=null) {
+            //2.根据模版ID获取品牌列表
+            List brandList = (List) redisTemplate.boundHashOps("brandList").get(templateId);
+            map.put("brandList",brandList);
+            System.out.println("品牌列表条数："+brandList.size());
+            //3.根据模版ID获取规格列表
+            List specList = (List) redisTemplate.boundHashOps("specList").get(templateId);
+            map.put("specList",specList);
+            System.out.println("规格列表条数："+specList.size());
+        }
+        return map;
 
     }
 }
